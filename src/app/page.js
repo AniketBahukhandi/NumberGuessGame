@@ -9,6 +9,8 @@ export default function Home() {
   const [screen, setScreen] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const [registeredUsers, setRegisteredUsers] = useState({});
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -41,32 +43,40 @@ export default function Home() {
   }, [timeLeft, gameStarted, number]);
 
   const handleSignup = () => {
-    if (!email || !password) return alert('Fill all fields');
-    if (registeredUsers[email]) return alert('Already registered');
+    if (!email || !password || !confirmPassword) return setError('Fill all fields');
+    if (password !== confirmPassword) return setError('Passwords do not match');
+    if (registeredUsers[email]) return setError('Already registered');
     const newUsers = { ...registeredUsers, [email]: password };
     localStorage.setItem('users', JSON.stringify(newUsers));
     setRegisteredUsers(newUsers);
     alert('Signup successful');
     setScreen('login');
+    setError('');
   };
 
   const handleLogin = () => {
     if (registeredUsers[email] === password) {
       setIsLoggedIn(true);
       setScreen('game');
+      setError('');
     } else {
-      alert('Invalid credentials');
+      setError('Invalid credentials');
     }
   };
 
   const handleForgotPassword = () => {
-    if (registeredUsers[email]) {
-      alert(`Password reset link sent to ${email}`);
-      setScreen('login');
-    } else {
-      alert('Email not found');
-    }
+    if (!email || !password || !confirmPassword) return setError('Fill all fields');
+    if (!registeredUsers[email]) return setError('Email not found');
+    if (password !== confirmPassword) return setError('Passwords do not match');
+  
+    const updatedUsers = { ...registeredUsers, [email]: password };
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    setRegisteredUsers(updatedUsers);
+    alert('Password reset successful');
+    setScreen('login');
+    setError('');
   };
+  
 
   const handlePlay = () => {
     setGameStarted(true);
@@ -118,28 +128,27 @@ export default function Home() {
     setIsLoggedIn(false);
     setEmail('');
     setPassword('');
+    setConfirmPassword('');
     setScreen('login');
   };
 
   return (
     screen !== 'game' ? (
-  
       <AuthForm
-  screen={screen}
-  email={email}
-  password={password}
-  confirmPassword=""
-  error=""
-  setEmail={setEmail}
-  setPassword={setPassword}
-  setConfirmPassword={() => {}}
-  handleLogin={handleLogin}
-  handleSignup={handleSignup}
-  handleForgotPassword={handleForgotPassword}
-  setScreen={setScreen}
-/>
+        screen={screen}
+        email={email}
+        password={password}
+        confirmPassword={confirmPassword}
+        setEmail={setEmail}
+        setPassword={setPassword}
+        setConfirmPassword={setConfirmPassword}
+        handleLogin={handleLogin}
+        handleSignup={handleSignup}
+        handleForgotPassword={handleForgotPassword}
+        setScreen={setScreen}
+        error={error}
+      />
     ) : (
-      
       <GameScreen
         gameStarted={gameStarted}
         timeLeft={timeLeft}
