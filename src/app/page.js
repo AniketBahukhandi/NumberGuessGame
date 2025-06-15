@@ -1,95 +1,157 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import React, { useEffect, useState } from 'react';
+import AuthForm from './components/authform';
+import GameScreen from './components/gamescreen';
+
+const getRandomNumber = () => Math.floor(Math.random() * 100) + 1;
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [screen, setScreen] = useState('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [registeredUsers, setRegisteredUsers] = useState({});
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const [number, setNumber] = useState(getRandomNumber());
+  const [guess, setGuess] = useState('');
+  const [message, setMessage] = useState('Make your first guess!');
+  const [attempts, setAttempts] = useState(0);
+  const [highScore, setHighScore] = useState(null);
+  const [score, setScore] = useState('--');
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [gameStarted, setGameStarted] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hs = localStorage.getItem('highScore');
+      if (hs) setHighScore(Number(hs));
+      const users = localStorage.getItem('users');
+      if (users) setRegisteredUsers(JSON.parse(users));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (gameStarted && timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (timeLeft === 0 && gameStarted) {
+      setMessage(`⏰ Time's up! The number was ${number}`);
+      setGameStarted(false);
+    }
+  }, [timeLeft, gameStarted]);
+
+  const handleSignup = () => {
+    if (!email || !password) return alert('Fill all fields');
+    if (registeredUsers[email]) return alert('Already registered');
+    const newUsers = { ...registeredUsers, [email]: password };
+    localStorage.setItem('users', JSON.stringify(newUsers));
+    setRegisteredUsers(newUsers);
+    alert('Signup successful');
+    setScreen('login');
+  };
+
+  const handleLogin = () => {
+    if (registeredUsers[email] === password) {
+      setIsLoggedIn(true);
+      setScreen('game');
+    } else {
+      alert('Invalid credentials');
+    }
+  };
+
+  const handleForgotPassword = () => {
+    if (registeredUsers[email]) {
+      alert(`Password reset link sent to ${email}`);
+      setScreen('login');
+    } else {
+      alert('Email not found');
+    }
+  };
+
+  const handlePlay = () => {
+    setGameStarted(true);
+    setTimeLeft(60);
+    setMessage('Make your first guess!');
+    setNumber(getRandomNumber());
+    setAttempts(0);
+    setScore('--');
+    setGuess('');
+  };
+
+  const handleGuess = () => {
+    const num = parseInt(guess);
+    if (isNaN(num) || num < 1 || num > 100) return setMessage('Enter number 1-100');
+    const nextAttempts = attempts + 1;
+    setAttempts(nextAttempts);
+
+    if (num === number) {
+      const currentScore = 100 - nextAttempts;
+      setMessage(`🎉 Correct in ${nextAttempts} attempts!`);
+      setScore(currentScore);
+      setGameStarted(false);
+      if (!highScore || currentScore > highScore) {
+        localStorage.setItem('highScore', currentScore);
+        setHighScore(currentScore);
+      }
+    } else {
+      setMessage(num < number ? 'Too low!' : 'Too high!');
+    }
+    setGuess('');
+  };
+
+  const handleResetGame = () => {
+    setNumber(getRandomNumber());
+    setAttempts(0);
+    setGuess('');
+    setMessage('Make your first guess!');
+    setScore('--');
+    setGameStarted(false);
+    setTimeLeft(60);
+  };
+
+  const handleResetHighScore = () => {
+    localStorage.removeItem('highScore');
+    setHighScore(null);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setEmail('');
+    setPassword('');
+    setScreen('login');
+  };
+
+  return (
+    screen !== 'game' ? (
+  
+      <AuthForm
+        screen={screen}
+        email={email}
+        password={password}
+        setEmail={setEmail}
+        setPassword={setPassword}
+        handleLogin={handleLogin}
+        handleSignup={handleSignup}
+        handleForgotPassword={handleForgotPassword}
+        setScreen={setScreen}
+      />
+    ) : (
+      
+      <GameScreen
+        gameStarted={gameStarted}
+        timeLeft={timeLeft}
+        guess={guess}
+        setGuess={setGuess}
+        handlePlay={handlePlay}
+        handleGuess={handleGuess}
+        message={message}
+        attempts={attempts}
+        score={score}
+        highScore={highScore}
+        handleResetGame={handleResetGame}
+        handleResetHighScore={handleResetHighScore}
+        handleLogout={handleLogout}
+      />
+    )
   );
 }
