@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import AuthForm from './components/authform';
-import GameScreen from './components/gamescreen';
+import AuthForm from './components/AuthForm';
+import GameScreen from './components/GameScreen';
 
 const getRandomNumber = () => Math.floor(Math.random() * 100) + 1;
 
