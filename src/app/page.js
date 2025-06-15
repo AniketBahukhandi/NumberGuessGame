@@ -38,7 +38,7 @@ export default function Home() {
       setMessage(`⏰ Time's up! The number was ${number}`);
       setGameStarted(false);
     }
-  }, [timeLeft, gameStarted]);
+  }, [timeLeft, gameStarted, number]);
 
   const handleSignup = () => {
     if (!email || !password) return alert('Fill all fields');
@@ -125,16 +125,19 @@ export default function Home() {
     screen !== 'game' ? (
   
       <AuthForm
-        screen={screen}
-        email={email}
-        password={password}
-        setEmail={setEmail}
-        setPassword={setPassword}
-        handleLogin={handleLogin}
-        handleSignup={handleSignup}
-        handleForgotPassword={handleForgotPassword}
-        setScreen={setScreen}
-      />
+  screen={screen}
+  email={email}
+  password={password}
+  confirmPassword=""
+  error=""
+  setEmail={setEmail}
+  setPassword={setPassword}
+  setConfirmPassword={() => {}}
+  handleLogin={handleLogin}
+  handleSignup={handleSignup}
+  handleForgotPassword={handleForgotPassword}
+  setScreen={setScreen}
+/>
     ) : (
       
       <GameScreen

@@ -36,7 +36,7 @@ const Game = () => {
       setMessage(`Time's up! The number was ${number}`);
       setGameStarted(false);
     }
-  }, [timeLeft, gameStarted]);
+  }, [timeLeft, gameStarted, number]);
 
   const handleLogin = () => {
     if (email && password) {

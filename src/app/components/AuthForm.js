@@ -56,7 +56,7 @@ const AuthForm = ({
       <div className="auth-links">
         {screen === 'login' && (
           <>
-            <a href="#" onClick={() => setScreen('signup')}>Don't have an account? Sign Up</a>
+            <a href="#" onClick={() => setScreen('signup')}>Don&apos;t have an account? Sign Up</a>
             <a href="#" onClick={() => setScreen('forgot')}>Forgot Password?</a>
           </>
         )}
